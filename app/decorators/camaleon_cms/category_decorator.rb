@@ -9,6 +9,11 @@
 class CamaleonCms::CategoryDecorator < CamaleonCms::TermTaxonomyDecorator
   delegate_all
 
+  def the_description
+    r = {description: object.description.to_s.translate(get_locale)}
+    r[:description]
+  end
+
   # return the public url for this category
   def the_url(*args)
     args = args.extract_options!

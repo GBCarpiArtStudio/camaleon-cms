@@ -96,7 +96,13 @@ module CamaleonCms::Frontend::NavMenuHelper
       parent_current = true if _is_current || current_children
 
       html += "<#{_args[:item_container]} class='#{_args[:item_class]} #{_args[:item_class_parent] if has_children} #{"#{_args[:item_current]}" if _is_current} #{"current-menu-ancestor" if current_children }'>#{_args[:link_before]}
-                <a #{r[:link_attrs]} href='#{data_nav_item[:link]}' class='#{args[:link_current] if _is_current} #{_args[:link_class_parent] if has_children} #{_args[:link_class]}' >#{_args[:before]}#{data_nav_item[:name]}#{_args[:after]}</a> #{_args[:link_after]}
+                <a #{r[:link_attrs]} href='#{data_nav_item[:link]}' class='#{args[:link_current] if _is_current} #{_args[:link_class_parent] if has_children} #{_args[:link_class]}' >
+                  #{_args[:before]}#{data_nav_item[:name]}#{_args[:after]}
+                </a>
+                <p class=\"menu-descr\">
+                  #{data_nav_item[:description]}
+                </p>
+                #{_args[:link_after]}
                 #{ html_children }
               </#{_args[:item_container]}>"
       index += 1
@@ -153,7 +159,7 @@ module CamaleonCms::Frontend::NavMenuHelper
           {link: post.the_url(as_path: true), name: post.the_title, type_menu: type_menu, current: @cama_visited_post.present? && @cama_visited_post.id == post.id}
         when 'category'
           category = CamaleonCms::Category.find(nav_menu_item.get_option('object_id')).decorate
-          {link: category.the_url(as_path: true), name: category.the_title, type_menu: type_menu, current: @cama_visited_category.present? && @cama_visited_category.id == category.id}
+          {link: category.the_url(as_path: true), name: category.the_title, type_menu: type_menu, current: @cama_visited_category.present? && @cama_visited_category.id == category.id, description: category.the_description}
         when 'post_tag'
           post_tag = CamaleonCms::PostTag.find(nav_menu_item.get_option('object_id')).decorate
           {link: post_tag.the_url(as_path: true), name: post_tag.the_title, type_menu: type_menu, current: @cama_visited_tag.present? && @cama_visited_tag.id == post_tag.id}
