@@ -11,8 +11,7 @@ class CamaleonCms::FrontendController < CamaleonCms::CamaleonController
   prepend_before_action :init_frontent
   prepend_before_action :cama_site_check_existence
   include CamaleonCms::Frontend::ApplicationHelper
-
-  layout "index"
+  layout Proc.new { |controller| params[:cama_ajax_request].present? ? "cama_ajax" : 'index' }
 
   before_action :before_hooks
   after_action :after_hooks
@@ -43,7 +42,7 @@ class CamaleonCms::FrontendController < CamaleonCms::CamaleonController
     cama_init_seo(@category)
     @children = @category.children.no_empty.decorate
     @posts = @category.the_posts.paginate(:page => params[:page], :per_page => current_site.front_per_page).eager_load(:metas)
-    r_file = lookup_context.template_exists?(@category.the_slug, "categories") ? "categories/#{@category.the_slug}" : "category"
+    r_file = lookup_context.template_exists?("categories/#{@category.the_slug}") ? "categories/#{@category.the_slug}" : "category"
     layout_ = lookup_context.template_exists?("layouts/categories/#{@category.the_slug}") ? "categories/#{@category.the_slug}" : (self.send :_layout)
     r = {category: @category, layout: layout_, render: r_file}; hooks_run("on_render_category", r)
     render r[:render], layout: r[:layout]
@@ -61,7 +60,7 @@ class CamaleonCms::FrontendController < CamaleonCms::CamaleonController
     @posts = @post_type.the_posts.paginate(:page => params[:page], :per_page => current_site.front_per_page).eager_load(:metas)
     @categories = @post_type.categories.no_empty.eager_load(:metas).decorate
     @post_tags = @post_type.post_tags.eager_load(:metas)
-    r_file = lookup_context.template_exists?(@post_type.the_slug, "post_types") ? "post_types/#{@post_type.the_slug}" : "post_type"
+    r_file = lookup_context.template_exists?("post_types/#{@post_type.the_slug}") ? "post_types/#{@post_type.the_slug}" : "post_type"
     layout_ = lookup_context.template_exists?("layouts/post_types/#{@post_type.the_slug}") ? "post_types/#{@post_type.the_slug}" : (self.send :_layout)
     r = {post_type: @post_type, layout: layout_, render: r_file};  hooks_run("on_render_post_type", r)
     render r[:render], layout: r[:layout]
@@ -78,7 +77,7 @@ class CamaleonCms::FrontendController < CamaleonCms::CamaleonController
     @cama_visited_tag = @post_tag
     cama_init_seo(@post_tag)
     @posts = @post_tag.the_posts.paginate(:page => params[:page], :per_page => current_site.front_per_page).eager_load(:metas)
-    r_file = lookup_context.template_exists?(@post_tag.the_slug, "post_tags") ? "post_tags/#{@post_tag.the_slug}" : "post_tag"
+    r_file = lookup_context.template_exists?("post_tags/#{@post_tag.the_slug}") ? "post_tags/#{@post_tag.the_slug}" : "post_tag"
     layout_ = lookup_context.template_exists?("layouts/post_tags/#{@post_tag.the_slug}") ? "post_tags/#{@post_tag.the_slug}" : (self.send :_layout)
     r = {post_tag: @post_tag, layout: layout_, render: r_file}; hooks_run("on_render_post_tag", r)
     render r[:render], layout: r[:layout]
@@ -90,7 +89,7 @@ class CamaleonCms::FrontendController < CamaleonCms::CamaleonController
     @cama_visited_search = params[:q]
     layout_ = lookup_context.template_exists?("layouts/search") ? "search" : (self.send :_layout)
     r = {layout: layout_, render: "search", posts: nil}; hooks_run("on_render_search", r)
-    @posts = r[:posts].present? ? r[:posts] : current_site.the_posts.where("title LIKE ? OR content_filtered LIKE ?", "%#{params[:q]}%", "%#{params[:q]}%")
+    @posts = r[:posts] != nil ? r[:posts] : current_site.the_posts.where("title LIKE ? OR content_filtered LIKE ?", "%#{params[:q]}%", "%#{params[:q]}%")
     @posts_size = @posts.size
     @posts = @posts.paginate(:page => params[:page], :per_page => current_site.front_per_page)
     render r[:render], layout: r[:layout]
@@ -165,10 +164,10 @@ class CamaleonCms::FrontendController < CamaleonCms::CamaleonController
       @categories = @post.the_categories
       @post.increment_visits!
       home_page = @_site_options[:home_page] rescue nil
-      if @post.get_template(@post_type).present? && lookup_context.template_exists?(@post.get_template(@post_type))
-        r_file = @post.get_template(@post_type)
-      elsif lookup_context.template_exists?("page_#{@post.id}")
+      if lookup_context.template_exists?("page_#{@post.id}")
         r_file = "page_#{@post.id}"
+      elsif @post.get_template(@post_type).present? && lookup_context.template_exists?(@post.get_template(@post_type))
+        r_file = @post.get_template(@post_type)
       elsif home_page.present? && @post.id.to_s == home_page
         r_file = "index"
       elsif lookup_context.template_exists?("#{@post_type.slug}")

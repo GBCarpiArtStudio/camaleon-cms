@@ -13,8 +13,12 @@ module ActionView
     module ViewPaths
       # fix to add camaleon prefix to search partials and layouts
       def find(name, prefixes = [], partial = false, keys = [], options = {})
-        prefixes = [""] unless prefixes.present?
-        prefixes = self.prefixes + prefixes if prefixes.is_a?(Array)
+        if !partial && !prefixes.present? && File.exist?(name) # fix for windows ==> render file: '....'
+          #puts "rendering specific file (render file: '....')"
+        else
+          prefixes = [""] unless prefixes.present?
+          prefixes = self.prefixes + prefixes if prefixes.is_a?(Array)
+        end
         @view_paths.find(*args_for_lookup(name, prefixes, partial, keys, options))
       end
       alias :find_template :find

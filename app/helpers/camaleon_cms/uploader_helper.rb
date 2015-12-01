@@ -57,7 +57,7 @@ module CamaleonCms::UploaderHelper
           settings[:formats] = "zip,7z,rar,tar,bz2,gz,rar2"
       end
 
-      unless settings[:formats].downcase.split(",").include?(File.extname(file_path).sub(".", "").downcase)
+      unless settings[:formats].downcase.split(",").include?(File.extname(settings[:filename]).sub(".", "").downcase)
         res[:error] = ct("file_format_error")
         return res
       end
@@ -213,7 +213,7 @@ module CamaleonCms::UploaderHelper
 
   # parse file information of FOG file
   def cama_uploader_parse_file(file)
-    res = {"name"=> File.basename(file.key), "size"=> file.content_length, "url"=> (file.public_url rescue [current_site.get_option("filesystem_s3_endpoint"), file.key ].join("/")), "deleteUrl"=> "" }
+    res = {"name"=> File.basename(file.key), "file"=> file.key, "size"=> file.content_length, "url"=> (file.public_url rescue [current_site.get_option("filesystem_s3_endpoint"), file.key ].join("/")), "deleteUrl"=> "" }
     ext = File.extname(file.key).sub(".", "").downcase
     res["format"] = "unknown"
     if "jpg,jpeg,png,gif,bmp,ico".split(",").include?(ext)
