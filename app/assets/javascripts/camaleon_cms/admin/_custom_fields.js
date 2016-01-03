@@ -36,7 +36,7 @@ function build_custom_field(values, multiple, field_key, rand, default_value) {
             }
             return false;
         });
-        $sortable.find('li:first .fa-times').hide();
+        // $sortable.find('li:first .fa-times').hide(); // fix per impossibilità di eliminare il primo valore
         $sortable.sortable({
             handle: ".fa-arrows"
         });
