@@ -98,6 +98,8 @@ class CamaleonCms::FrontendController < CamaleonCms::CamaleonController
     post_to_exclude = Array.new
     tags.each { |tag| post_to_exclude += tag.decorate.the_posts.pluck(:id) }
     
+    post_to_exclude += [185]
+
     @posts = r[:posts].present? ? r[:posts] : current_site.the_posts.where.not("cama_posts.id IN (?)", post_to_exclude ).where("title LIKE ? OR content_filtered LIKE ?", "%#{params[:q]}%", "%#{params[:q]}%")
     @posts_size = @posts.size
     @posts = @posts.paginate(:page => params[:page], :per_page => current_site.front_per_page)
