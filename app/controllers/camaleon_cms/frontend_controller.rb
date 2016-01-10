@@ -90,7 +90,15 @@ class CamaleonCms::FrontendController < CamaleonCms::CamaleonController
     @cama_visited_search = params[:q]
     layout_ = lookup_context.template_exists?("layouts/search") ? "search" : (self.send :_layout)
     r = {layout: layout_, render: "search", posts: nil}; hooks_run("on_render_search", r)
-    @posts = r[:posts].present? ? r[:posts] : current_site.the_posts.where("title LIKE ? OR content_filtered LIKE ?", "%#{params[:q]}%", "%#{params[:q]}%")
+
+    #tags_slugs = ['fefe', 'jeanbaptiste', 'jihuan', 'charles', 'ricky', 'tao', 'pedro']
+    tags_ids = [50, 91, 92, 93, 94, 95, 96]
+    tags = PostTag.where( "id IN (?) ", tags_ids )
+
+    post_to_exclude = Array.new
+    tags.each { |tag| post_to_exclude += tag.decorate.the_posts.pluck(:id) }
+    
+    @posts = r[:posts].present? ? r[:posts] : current_site.the_posts.where.not("cama_posts.id IN (?)", post_to_exclude ).where("title LIKE ? OR content_filtered LIKE ?", "%#{params[:q]}%", "%#{params[:q]}%")
     @posts_size = @posts.size
     @posts = @posts.paginate(:page => params[:page], :per_page => current_site.front_per_page)
     render r[:render], layout: r[:layout]
